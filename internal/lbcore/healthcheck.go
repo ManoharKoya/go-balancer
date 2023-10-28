@@ -40,7 +40,7 @@ func (hc *HealthCheck) PerformHealthCheck(server *servers.BackendServer) bool {
 	if err != nil {
 		log.Fatal("Error sending request: ", err.Error())
 	}
-	return resp == &hc.ExpectedResponse
+	return resp.StatusCode == hc.ExpectedResponse.StatusCode
 }
 
 // httpRequest Builds http.Request based on hc.HttpMethod,
@@ -48,7 +48,7 @@ func (hc *HealthCheck) PerformHealthCheck(server *servers.BackendServer) bool {
 func (hc *HealthCheck) httpRequest(server *servers.BackendServer) *http.Request {
 	request, err := http.NewRequest(
 		hc.HttpMethod,
-		fmt.Sprintf("https://%s/%s:%d", server.Address, hc.Endpoint, server.Port),
+		fmt.Sprintf("http://%s:%d/%s", server.Address, server.Port, hc.Endpoint),
 		io.NopCloser(bytes.NewReader([]byte(hc.HttpBody))))
 	if err != nil {
 		log.Fatal("Error in building httpRequest: ", err)
