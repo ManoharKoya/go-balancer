@@ -37,7 +37,7 @@ func (hc *HealthCheck) StartHealthChecks(servers []*servers.BackendServer) {
 // PerformHealthCheck will perform the health check on each server
 // by requests built http.Request to server and Validates http.Response.
 func (hc *HealthCheck) PerformHealthCheck(server *servers.BackendServer) bool {
-	client := &http.Client{}
+	client := &http.Client{Timeout: hc.Timeout}
 	resp, err := client.Do(hc.httpRequest(server))
 	if err != nil {
 		log.Fatal("Error sending request: ", err.Error())
