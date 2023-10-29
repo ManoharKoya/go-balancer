@@ -18,6 +18,8 @@ type HealthCheck struct {
 	ExpectedResponse http.Response
 	Timeout          time.Duration
 	Frequency        time.Duration
+	LastHealthCheck  time.Time
+	Schedule         string
 }
 
 // StartHealthChecks will start the health checks on all backend servers.

@@ -3,8 +3,8 @@ package lbcore
 import (
 	"go-balancer/internal/lbcore/servers"
 	"go-balancer/utils/stringutils"
+	"go-balancer/utils/testutils"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 )
@@ -20,15 +20,7 @@ var healthCheck = HealthCheck{
 
 func TestStartHealthChecks(t *testing.T) {
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		requestUrlPath := "/" + healthCheck.Endpoint
-		if req.URL.Path != requestUrlPath {
-			t.Errorf("Expected to request %s, but requesting %s.", requestUrlPath, req.URL.Path)
-		} else if stringutils.ReadCloserString(&req.Body) != healthCheck.HttpBody {
-			t.Errorf("Expected request with %s body, but got %s.", healthCheck.HttpBody, stringutils.ReadCloserString(&req.Body))
-		}
-		w.WriteHeader(http.StatusOK)
-	}))
+	server := testutils.MockHttpServer(t, healthCheck.Endpoint, healthCheck.HttpBody)
 	defer server.Close()
 
 	n := 5
