@@ -18,6 +18,8 @@ type HealthCheck struct {
 	ExpectedResponse http.Response
 	Timeout          time.Duration
 	Frequency        time.Duration
+	LastHealthCheck  time.Time
+	Schedule         string
 }
 
 // StartHealthChecks will start the health checks on all backend servers.
@@ -35,12 +37,12 @@ func (hc *HealthCheck) StartHealthChecks(servers []*servers.BackendServer) {
 // PerformHealthCheck will perform the health check on each server
 // by requests built http.Request to server and Validates http.Response.
 func (hc *HealthCheck) PerformHealthCheck(server *servers.BackendServer) bool {
-	client := &http.Client{}
+	client := &http.Client{Timeout: hc.Timeout}
 	resp, err := client.Do(hc.httpRequest(server))
 	if err != nil {
 		log.Fatal("Error sending request: ", err.Error())
 	}
-	return resp == &hc.ExpectedResponse
+	return resp.StatusCode == hc.ExpectedResponse.StatusCode
 }
 
 // httpRequest Builds http.Request based on hc.HttpMethod,
@@ -48,7 +50,7 @@ func (hc *HealthCheck) PerformHealthCheck(server *servers.BackendServer) bool {
 func (hc *HealthCheck) httpRequest(server *servers.BackendServer) *http.Request {
 	request, err := http.NewRequest(
 		hc.HttpMethod,
-		fmt.Sprintf("https://%s/%s:%d", server.Address, hc.Endpoint, server.Port),
+		fmt.Sprintf("http://%s:%d/%s", server.Address, server.Port, hc.Endpoint),
 		io.NopCloser(bytes.NewReader([]byte(hc.HttpBody))))
 	if err != nil {
 		log.Fatal("Error in building httpRequest: ", err)
